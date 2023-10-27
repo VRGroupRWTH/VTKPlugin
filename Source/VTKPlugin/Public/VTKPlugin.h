@@ -1,14 +1,19 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
 #pragma once
 
 #include "Modules/ModuleManager.h"
-#include "Runtime/Core/Public/Containers/Array.h"
 
 class FVTKPluginModule : public IModuleInterface
 {
 public:
-  virtual void StartupModule () override;
-  virtual void ShutdownModule() override;
+
+	/** IModuleInterface implementation */
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
 
 private:
-  TArray<void*> DynamicLinkLibraries;
+	/** Handle to the test dll we will load */
+	void*	ExampleLibraryHandle;
+	TArray<void*> DynamicLinkLibraries;
 };
