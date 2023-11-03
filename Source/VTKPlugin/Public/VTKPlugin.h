@@ -13,7 +13,12 @@ public:
 	virtual void ShutdownModule() override;
 
 private:
-	/** Handle to the test dll we will load */
-	void*	ExampleLibraryHandle;
+	FString GetBinariesDir();
+	FString GetExtensionFilter();
+	void LoadDLLs();
+	void UnloadDLLs();
+	
+private:
+	/** Array which holds handles to the loaded VTK dlls */
 	TArray<void*> DynamicLinkLibraries;
 };

@@ -9,65 +9,62 @@ public class VTKLibrary : ModuleRules
 	public VTKLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
 		Type = ModuleType.External;
-
-		// Infer the correct folder to load the DLLs/Libs from
-		string BuildFolder = "";
-		switch (Target.Configuration)
-		{
-			case UnrealTargetConfiguration.Debug:
-			case UnrealTargetConfiguration.DebugGame:
-				BuildFolder = "Debug";
-				break;
-			case UnrealTargetConfiguration.Development:
-				//BuildFolder = "RelWithDebInfo";
-				BuildFolder = "Debug";
-				break;
-			case UnrealTargetConfiguration.Shipping:
-				BuildFolder = "Release";
-				break;
-			default:
-				BuildFolder = "Release";
-				break;
-		}
 		
-		// Load Library
+		// Load includes
 		PublicSystemIncludePaths.Add("$(ModuleDir)/Public");
-
-		if (Target.Platform == UnrealTargetPlatform.Win64)
+		
+		// Load binaries
+		if (Target.IsInPlatformGroup(UnrealPlatformGroup.Windows))
 		{
+			// If you want to load a debug build, change the build directory here
+			var libSearchPath = Path.Combine(ModuleDirectory, "Windows", "x64", "Debug");
+			//var dllSearchPath = Path.Combine(ModuleDirectory, "Windows", "x64", "Debug");
+			var dllSearchPath = Path.Combine(PluginDirectory, "Binaries", "ThirdParty", "Win64");
+
+			if (!Directory.Exists(libSearchPath) || !Directory.Exists(dllSearchPath))
+				Console.WriteLine("Did not find lib- or dll-path for VTKLibrary!");
+			
 			// Libs
-			foreach (var value in Directory.EnumerateFiles(Path.Combine(ModuleDirectory, "x64", BuildFolder), "*.lib"  , SearchOption.AllDirectories))
+			foreach (var libPath in Directory.EnumerateFiles(libSearchPath, "*.lib"  , SearchOption.AllDirectories))
 			{
-				PublicAdditionalLibraries.Add(value);
+				PublicAdditionalLibraries.Add(libPath);
 			}
 
 			// DLLs
-			foreach (var value in Directory.EnumerateFiles(Path.Combine(ModuleDirectory, "x64", BuildFolder), "*.dll"  , SearchOption.AllDirectories))
+			foreach (var dllPath in Directory.EnumerateFiles(dllSearchPath, "*.dll"  , SearchOption.AllDirectories))
 			{
-				PublicDelayLoadDLLs.Add(value.Substring(value.LastIndexOf('\\') + 1));
-				RuntimeDependencies.Add(value);
-			}
-		}
-		else if (Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			// Libs & DLLs
-			// ToDo: Test & fix path (e.g. x86_64-unknown-linux-gnu)
-			foreach (var value in Directory.EnumerateFiles(Path.Combine(ModuleDirectory, "Linux", "x86_64-unknown-linux-gnu"), "*.so"  , SearchOption.AllDirectories))
-			{
-				PublicAdditionalLibraries.Add(value);
-				PublicDelayLoadDLLs.Add(value);
-				RuntimeDependencies.Add(value);
+				var dllName = dllPath.Substring(dllPath.LastIndexOf('\\') + 1);
+				PublicDelayLoadDLLs.Add(dllName);
+				RuntimeDependencies.Add(dllPath);
 			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
+			string dylibSearchPath = Path.Combine(PluginDirectory, "Binaries", "ThirdParty", "Mac");
+			
+			if (!Directory.Exists(dylibSearchPath))
+				Console.WriteLine("Did not find dylib-path for VTKLibrary!");
+
 			// DyLibs
-			// ToDo: Test
-			//throw new Exception()
-			foreach (var value in Directory.EnumerateFiles(Path.Combine(ModuleDirectory, "Mac", BuildFolder), "*.dylib"  , SearchOption.AllDirectories))
+			foreach (var dylibPath in Directory.EnumerateFiles(dylibSearchPath, "*.dylib"  , SearchOption.AllDirectories))
 			{
-				PublicDelayLoadDLLs.Add(value);
-				RuntimeDependencies.Add(value);
+				PublicDelayLoadDLLs.Add(dylibPath);
+				RuntimeDependencies.Add(dylibPath);
+			}
+		}
+		else if (Target.IsInPlatformGroup(UnrealPlatformGroup.Unix))
+		{
+			var soSearchPath = Path.Combine(PluginDirectory, "Binaries", "ThirdParty", "Linux");
+			
+			if (!Directory.Exists(soSearchPath))
+				Console.WriteLine("Did not find so-path for VTKLibrary!");
+			
+			// SOs
+			foreach (var soPath in Directory.EnumerateFiles(soSearchPath, "*.so"  , SearchOption.AllDirectories))
+			{
+				PublicAdditionalLibraries.Add(soPath);
+				PublicDelayLoadDLLs.Add(soPath);
+				RuntimeDependencies.Add(soPath);
 			}
 		}
 	}
