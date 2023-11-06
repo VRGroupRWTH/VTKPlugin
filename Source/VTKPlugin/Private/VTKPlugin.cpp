@@ -9,7 +9,6 @@
 
 #define LOCTEXT_NAMESPACE "FVTKPluginModule"
 
-#if 1
 void FVTKPluginModule::StartupModule()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Loading VTK module..."));
@@ -37,12 +36,11 @@ FString FVTKPluginModule::GetBinariesDir()
 	//BaseDir = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*BaseDir);
 
 #if PLATFORM_WINDOWS
-	//return FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VTKLibrary/Windows/x64/Debug"));
 	return FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/Win64"));
 #elif PLATFORM_LINUX
-	return Plugin->GetBaseDir() / TEXT("Binaries/ThirdParty/VTKLibrary/Linux");
+	return FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/Linux"));
 #elif PLATFORM_MAC
-	return Plugin->GetBaseDir() / TEXT("Binaries/ThirdParty/VTKLibrary/Mac");
+	return FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/Mac"));
 #endif
 }
 
@@ -51,9 +49,9 @@ FString FVTKPluginModule::GetExtensionFilter()
 #if PLATFORM_WINDOWS
 	return "dll";
 #elif PLATFORM_LINUX
-	return TEXT("so");
+	return "so";
 #elif PLATFORM_MAC
-	return TEXT("dylib");
+	return "dylib";
 #endif
 }
 
@@ -63,19 +61,30 @@ void FVTKPluginModule::LoadDLLs()
 	const FString ExtFilter = GetExtensionFilter();
 
 	TArray<FString> Files;
+	TArray<FString> FilesAdded;
 	IFileManager::Get().FindFiles(Files, *VTKBinariesDir, *ExtFilter);
-	// Since the order of DLLs are unknown, try all possible combinations until all are loaded or none combinations are left.
+	// Since the order of DLLs are unknown,
+	// try all possible combinations until all are loaded or none combinations are left.
 	for (const auto& i : Files)
 	{
 		for (const auto& File : Files)
 		{
+			// DLL already loaded?
+			if (FilesAdded.Contains(File))
+				continue;
+			
 			const FString Path = FPaths::Combine(VTKBinariesDir, File);
 			auto Dll  = FPlatformProcess::GetDllHandle(*Path);
 			
-			if (Dll && !DynamicLinkLibraries.Contains(Dll))
+			// If DLL valid => load
+			if (Dll)
+			{
 				DynamicLinkLibraries.Add(Dll);
+				FilesAdded.Add(File);
+			}
 		}
 		
+		// All DLLs loaded
 		if (DynamicLinkLibraries.Num() == Files.Num())
 			break;
 	}
@@ -85,18 +94,21 @@ void FVTKPluginModule::UnloadDLLs()
 {
 	for (const auto& LibraryHandle : DynamicLinkLibraries)
 	{
-		// VTK will throw an exception when the library is unloaded.
-		// Problem is also stated here: https://discourse.vtk.org/t/vtkcommoninformationkeymanager-destruction-crash-corrupt-vfptr-table/2371/3
-		// This is not a bigger problem without a debugger attached, but the suggested solution is no not unload VTK manually at all.
-		// If you know a fix or want to do it anyway, uncomment below line.
-		
-		//FPlatformProcess::FreeDllHandle(LibraryHandle);
+		// VTK will throw an exception when the library is unloaded in Windows.
+		// Problem is also stated here:
+		// https://discourse.vtk.org/t/vtkcommoninformationkeymanager-destruction-crash-corrupt-vfptr-table/2371/3
+		// This is not a bigger problem without a debugger attached,
+		// but the suggested solution is no not unload VTK manually at all.
+		//
+		// If you know a fix or want to do it anyway, remove the platform check.
+
+#if !PLATFORM_WINDOWS
+		FPlatformProcess::FreeDllHandle(LibraryHandle);
+#endif
 	}
 	
 	DynamicLinkLibraries.Empty();
 }
-
-#endif
 
 #undef LOCTEXT_NAMESPACE
 	

@@ -6,6 +6,7 @@ Binaries/*
 Intermediate/*
 
 # ignore vtk buld locations
+Temporary
 Source/ThirdParty/VTKLibrary/Public
 Source/ThirdParty/VTKLibrary/Windows
 Source/ThirdParty/VTKLibrary/Mac
