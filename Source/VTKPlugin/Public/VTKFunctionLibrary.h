@@ -18,4 +18,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="VTK")
 	static float DistanceBetweenTwoPoints(const FVector3f& P0, const FVector3f& P1);
+
+	UFUNCTION(BlueprintCallable, Category="VTK")
+	static bool ReadStructuredGridTest(const FString& Filepath);
 };

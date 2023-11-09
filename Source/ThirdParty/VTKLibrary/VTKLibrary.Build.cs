@@ -43,9 +43,11 @@ public class VTKLibrary : ModuleRules
 				// and allows us to load them later in VTKPlugin.cpp during StartupModule.
 				// That allows us to load dlls from specific paths, which is not (easily) possible otherwise on Windows.
 				//PublicDelayLoadDLLs.Add(dllName);
+				//RuntimeDependencies.Add(srcPath);
 
 				// This adds a runtime dependency & copies the dll from source path to destination path on build
 				RuntimeDependencies.Add(destPath, srcPath);
+
 			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)

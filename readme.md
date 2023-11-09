@@ -6,10 +6,10 @@ Currently, this plugin does the following:
 - Download & build VTK (infer/change the version in the install script file)
 - Expose VTK to your complete Unreal project (public)
 - Provide a blueprint function "DistanceBetweenTwoPoints" for testing `vtkMath.h` (based on an [official VTK example](https://examples.vtk.org/site/Cxx/SimpleOperations/DistanceBetweenPoints/))
+- Provide a blueprint function "ReadStructuredGridTest" for testing multiple vtk includes (loosely based on an [official VTK example](https://examples.vtk.org/site/Cxx/IO/ReadStructuredGrid/#download-and-build-readstructuredgrid))
 
-Check the Unreal Log when starting your project.
-This plugin is quite verbose as it aims to be a foundation for implementing VTK functionality.
-The result of the blueprint function is also printed in the Unreal Log.
+This plugin is quite verbose as it aims to be a foundation for implementing & testing VTK functionality in UE.
+Check the Unreal Log for `[VTKPlugin]` to see what's happening (also valid for the blueprint functions).
 
 ### Remarks on Windows
 
@@ -56,6 +56,8 @@ Alternatively, download & build the VTK library yourself and copy the files to t
 - C++17
 
 ## Troubleshooting
+
+For test data have a look at the VTKData repository (files here are referenced in the [official VTK examples](https://examples.vtk.org/site/Cxx)): https://github.com/open-cv/VTKData
 
 If you are using Linux or Mac the scripts or configuration may not be fully functional.
 Please consider a pull request if this is the case and you fix it. :-)

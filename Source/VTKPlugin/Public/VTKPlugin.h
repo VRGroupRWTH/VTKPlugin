@@ -11,14 +11,16 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+	virtual bool SupportsDynamicReloading() override;
 
 private:
-	FString GetBinariesDir();
+	FString GetVTKBinariesDir();
 	FString GetExtensionFilter();
 	void LoadDLLs();
 	void UnloadDLLs();
 	
 private:
 	/** Array which holds handles to the loaded VTK dlls */
-	TArray<void*> DynamicLinkLibraries;
+	TArray<void*> DynamicLinkLibraryHandles;
+	TArray<FString> DynamicLinkLibraryNames;
 };
