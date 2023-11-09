@@ -2,7 +2,7 @@
 
 
 #include "VTKFunctionLibrary.h"
-#include <vtkMath.h>
+#include "vtkMath.h"
 
 float UVTKFunctionLibrary::DistanceBetweenTwoPoints(const FVector3f& P0, const FVector3f& P1)
 {

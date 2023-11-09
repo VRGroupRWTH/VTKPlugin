@@ -1,11 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM extract parameter1
 set arg1=%1
-
 set INITIAL_DIR=%CD%
 cd /d "%~dp0"
+set VTKLIB_DIR=%CD%\Source\ThirdParty\VTKLibrary
 
 REM check for build config
 if /I "%arg1%" == "Debug" (
@@ -36,16 +35,12 @@ echo "Doing a %VTK_BUILD_CONFIG% Build."
 cd    Build
 cmake .. -DVTK_GROUP_ENABLE_Rendering=DONT_WANT
 cmake --build   . --config %VTK_BUILD_CONFIG% --parallel 20
-cmake --install . --config %VTK_BUILD_CONFIG% --prefix ..\Install\%VTK_BUILD_CONFIG%
+cmake --install . --config %VTK_BUILD_CONFIG% --prefix %VTKLIB_DIR%\%VTK_BUILD_CONFIG%
 
-REM copy files to expected locations
-cd ..
-xcopy /s Install\%VTK_BUILD_CONFIG%\include\vtk-9.3 ..\..\Source\ThirdParty\VTKLibrary\Public\
-xcopy /s Install\%VTK_BUILD_CONFIG%\lib             ..\..\Source\ThirdParty\VTKLibrary\Windows\x64\%VTK_BUILD_CONFIG%\
-xcopy /s Install\%VTK_BUILD_CONFIG%\bin             ..\..\Source\ThirdParty\VTKLibrary\Windows\x64\%VTK_BUILD_CONFIG%\
-xcopy /s Install\%VTK_BUILD_CONFIG%\bin             ..\..\Binaries\ThirdParty\Win64\
+REM move includes to expected locations (the same for all build configs)
+move %VTKLIB_DIR%\%VTK_BUILD_CONFIG%\include\vtk-9.3 %VTKLIB_DIR%\Public
 
-cd ..\..
+cd ..\..\..
 
 REM cleanup?
 CHOICE /C YN /M "Delete the temporary build folder (./Temporary)?"

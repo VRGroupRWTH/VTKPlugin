@@ -26,12 +26,12 @@ public class VTKPlugin : ModuleRules
 			new string[]
 			{
 				"Core",
+				"VTKLibrary",
 				"Projects",
 				// ... add other public dependencies that you statically link with here ...
 				
 				// Official VTK should better be a private module dependency
 				// to only expose curated VTK functionality & improve reusability.
-				"VTKLibrary",
 			}
 			);
 			

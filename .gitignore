@@ -5,9 +5,7 @@
 Binaries/*
 Intermediate/*
 
-# ignore vtk buld locations
+# ignore vtk library folder except the UE build script
 Temporary
-Source/ThirdParty/VTKLibrary/Public
-Source/ThirdParty/VTKLibrary/Windows
-Source/ThirdParty/VTKLibrary/Mac
-Source/ThirdParty/VTKLibrary/Linux
+Source/ThirdParty/VTKLibrary/*
+!Source/ThirdParty/VTKLibrary/VTKLibrary.Build.cs

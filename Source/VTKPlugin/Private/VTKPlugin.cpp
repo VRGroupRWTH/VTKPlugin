@@ -11,12 +11,15 @@
 
 void FVTKPluginModule::StartupModule()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Loading VTK module..."));
+	UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] Delay-loading VTK module..."));
 
-	LoadDLLs();
+	UE_LOG(LogTemp, Error, TEXT("[VTKPlugin] VTK is currently NOT delayloaded (see VTKLibrary.Build.cs), as this causes UE to crash. Meaning, all VTK libraries are already loaded."));
+	//LoadDLLs();
 
-	UE_LOG(LogTemp, Warning, TEXT("%d VTK libraries loaded!"), DynamicLinkLibraries.Num());
+	UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] %d VTK libraries delay-loaded!"), DynamicLinkLibraries.Num());
 }
+
+
 
 void FVTKPluginModule::ShutdownModule()
 {
@@ -33,15 +36,32 @@ FString FVTKPluginModule::GetBinariesDir()
 	check(Plugin.IsValid());
 	
 	FString BaseDir = Plugin->GetBaseDir();
-	//BaseDir = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*BaseDir);
 
-#if PLATFORM_WINDOWS
-	return FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/Win64"));
-#elif PLATFORM_LINUX
-	return FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/Linux"));
-#elif PLATFORM_MAC
-	return FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/Mac"));
+	// If you want to load a debug or release build based on UE build, specify here
+#if UE_BUILD_SHIPPING ||UE_BUILD_SHIPPING_WITH_EDITOR
+	FString BuildDir = "Release";
+#else
+	FString BuildDir = "Release";
 #endif
+	
+	
+#if PLATFORM_WINDOWS
+	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VTKLibrary/Win64"));
+	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VTKLibrary"), *BuildDir, "bin");
+#elif PLATFORM_LINUX
+	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VTKLibrary/Linux"));
+	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VTKLibrary/Linux"), *BuildDir, "bin");
+#elif PLATFORM_MAC
+	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VTKLibrary/Mac"));
+	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VTKLibrary/Mac"), *BuildDir, "bin");
+#endif
+
+	if (!FPaths::DirectoryExists(BinariesDir))
+	{
+		UE_LOG(LogTemp, Error, TEXT("[VTKPlugin] VTK Binaries directory does not exist: %s"), *BinariesDir);
+	}
+
+	return BinariesDir;
 }
 
 FString FVTKPluginModule::GetExtensionFilter()
@@ -72,11 +92,12 @@ void FVTKPluginModule::LoadDLLs()
 			// DLL already loaded?
 			if (FilesAdded.Contains(File))
 				continue;
-			
+
+			// Get DLL handle
 			const FString Path = FPaths::Combine(VTKBinariesDir, File);
-			auto Dll  = FPlatformProcess::GetDllHandle(*Path);
+			void* Dll  = FPlatformProcess::GetDllHandle(*Path);
 			
-			// If DLL valid => load
+			// If DLL handle valid => keep
 			if (Dll)
 			{
 				DynamicLinkLibraries.Add(Dll);
@@ -101,6 +122,7 @@ void FVTKPluginModule::UnloadDLLs()
 		// but the suggested solution is no not unload VTK manually at all.
 		//
 		// If you know a fix or want to do it anyway, remove the platform check.
+		// TODO: fix unloading for windows
 
 #if !PLATFORM_WINDOWS
 		FPlatformProcess::FreeDllHandle(LibraryHandle);

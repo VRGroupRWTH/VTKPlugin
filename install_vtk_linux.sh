@@ -2,9 +2,9 @@
 
 # cast parameter1 to lowercase
 arg1=$(echo $1 | awk '{print tolower($0)}')
-
 INITIAL_DIR=$PWD
 cd "${0%/*}"
+VTKLIB_DIR=$PWD/Source/ThirdParty/VTKLibrary
 
 # check for build config
 if [ $arg1="debug" ]; then
@@ -37,16 +37,12 @@ printf "Doing a $VTK_BUILD_CONFIG Build."
 cd    Build
 cmake .. -DVTK_GROUP_ENABLE_Rendering=DONT_WANT
 cmake --build   . --config $VTK_BUILD_CONFIG --parallel 20
-cmake --install . --config $VTK_BUILD_CONFIG --prefix ../Install/$VTK_BUILD_CONFIG
+cmake --install . --config $VTK_BUILD_CONFIG --prefix $VTKLIB_DIR/Linux/$VTK_BUILD_CONFIG
 
-# copy files to expected locations
-cd ..
-mkdir -p ../../Source/ThirdParty/VTKLibrary/Public        && cp -a ./Install/$VTK_BUILD_CONFIG/include/vtk-9.3/. "$_"
-mkdir -p ../../Source/ThirdParty/VTKLibrary/Linux/x64/$VTK_BUILD_CONFIG && cp -a ./Install/$VTK_BUILD_CONFIG/lib/. "$_"
-mkdir -p ../../Source/ThirdParty/VTKLibrary/Linux/x64/$VTK_BUILD_CONFIG && cp -a ./Install/$VTK_BUILD_CONFIG/bin/. "$_"
-mkdir -p ../../Binaries/ThirdParty/Linux && cp -a ./Install/$VTK_BUILD_CONFIG/bin/. "$_"
+# move files to expected locations
+mv $VTKLIB_DIR/Linux/$VTK_BUILD_CONFIG/include/vtk-9.3 $VTKLIB_DIR/Public
 
-cd ../..
+cd ../../..
 
 # cleanup?
 printf 'Delete the temporary build folder (./Temporary)? [Y,N]?'
