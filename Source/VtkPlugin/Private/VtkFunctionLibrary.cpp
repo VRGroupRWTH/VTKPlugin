@@ -2,21 +2,7 @@
 
 
 #include "VtkFunctionLibrary.h"
-
-THIRD_PARTY_INCLUDES_START
-// DistanceBetweenTwoPoins example
-#include "vtkMath.h"
-
-#if PLATFORM_WINDOWS
-// StructuredGridReader example
-#include "vtkNamedColors.h"
-#include "vtkNew.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkStructuredGridGeometryFilter.h"
-#include "vtkXMLStructuredGridReader.h"
-#include "vtkStructuredGrid.h"
-#endif
-THIRD_PARTY_INCLUDES_END
+#include "VtkWrapper.h"
 
 float UVtkFunctionLibrary::DistanceBetweenTwoPoints(const FVector3f& P0, const FVector3f& P1)
 {
@@ -29,7 +15,7 @@ float UVtkFunctionLibrary::DistanceBetweenTwoPoints(const FVector3f& P0, const F
 	const double vtk_p1[3] = {P1.X, P1.Y, P1.Z};
 
 	// Find the squared distance between the points using vtk.
-	const double squaredDistance = vtkMath::Distance2BetweenPoints(vtk_p0, vtk_p1);
+	const double squaredDistance = FvtkMath::Distance2BetweenPoints(vtk_p0, vtk_p1);
 
 	// Take the square root to get the Euclidean distance between the points.
 	const double distance = std::sqrt(squaredDistance);
@@ -44,7 +30,7 @@ float UVtkFunctionLibrary::DistanceBetweenTwoPoints(const FVector3f& P0, const F
 
 bool UVtkFunctionLibrary::ReadStructuredGridTest(const FString& Filepath)
 {
-#if PLATFORM_WINDOWS
+#if 1
 	const FString CleanFilepath = Filepath.TrimQuotes();
 	UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] VTK Example: Read Structured Grid"));
 	UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] Reading structured grid: %s"), *CleanFilepath);
@@ -56,7 +42,7 @@ bool UVtkFunctionLibrary::ReadStructuredGridTest(const FString& Filepath)
 	}
 	
 	// Read the file.
-	vtkNew<vtkXMLStructuredGridReader> reader;
+	FvtkXMLStructuredGridReader* reader = new FvtkXMLStructuredGridReader();
 	reader->SetFileName(TCHAR_TO_ANSI(*CleanFilepath));
 	reader->Update();
 

@@ -1,5 +1,6 @@
 #ignore mac fs files
 .DS_Store
+.vscode
 
 # ignore ue binaries
 Binaries/*

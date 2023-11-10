@@ -26,7 +26,7 @@ public class VtkPlugin : ModuleRules
 			new string[]
 			{
 				"Core",
-				"VtkLibrary",
+				"VtkWrapper",
 				"Projects",
 				// ... add other public dependencies that you statically link with here ...
 				

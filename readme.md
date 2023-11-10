@@ -1,15 +1,15 @@
 ## VTK Plugin for Unreal Engine 5+
 
+**This branch is fully cross-compatible between Windows and Unix (Linux/Mac).** See "How" in the [Remarks on Linux/Mac](#remarks-on-linuxmac) section.
+
 A plugin that links the [VTK Library](https://github.com/Kitware/VTK) to [Unreal Engine 5.3](https://docs.unrealengine.com/5.3/en-US/).
 
 Currently, this plugin does the following:
 - Download & build VTK (infer/change the version in the install script file)
 - Expose VTK to your complete Unreal project (public, but you may want this private)
 - Provide a blueprint function "DistanceBetweenTwoPoints" for testing `vtkMath.h` (based on an [official VTK example](https://examples.vtk.org/site/Cxx/SimpleOperations/DistanceBetweenPoints/), cross-compatible)
-- Provide a blueprint function "ReadStructuredGridTest" for more complex vtk includes (loosely based on an [official VTK example](https://examples.vtk.org/site/Cxx/IO/ReadStructuredGrid/#download-and-build-readstructuredgrid), only Windows due to RTTI)
-- Conditional cross-compatibility for Windows/Linux/Mac (tested)
-  - Windows: VTK should work as-is without further adjustments
-  - Linux/Mac: Certain VTK includes won't compile as they use [RTTI mechanics](https://en.wikipedia.org/wiki/Run-time_type_information)
+- Provide a blueprint function "ReadStructuredGridTest" for more complex vtk includes (loosely based on an [official VTK example](https://examples.vtk.org/site/Cxx/IO/ReadStructuredGrid/#download-and-build-readstructuredgrid)
+- Complete cross-compatibility for Windows/Linux/Mac (tested)
 
 This plugin is quite verbose as it aims to be a foundation for implementing & testing VTK functionality in UE.
 Check the Unreal Log for `[VtkPlugin]` to see what's happening (also valid for the blueprint functions).
@@ -22,21 +22,13 @@ This prevents module reloading.
 ### Remarks on Linux/Mac
 
 Delay-loading is enabled on Unix-based systems and thus also module reloading (theoretically).
-While this plugin compiles on Linux and Mac, not all features are currently supported compared to the Windows implementation because of missing RTTI support.
 
-**TL;DR:** See the `VtkWrapper` branch for an example implementation with full cross-compatability.
+To achieve cross-compatibility of all VTK methods, the `VtkWrapper` module with [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) enabled was implemented to wrap all VTK-native code.
+Each VTK functionality needs to be wrapped explicitly before it is exposed (e.g., to `VtkPlugin` which implements the blueprints).  
+This is needed, as contrary to Windows Unreal Engine on Unix is by default compiled without RTTI support (thoroughly discussed [here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/22)).
+Globally enabling RTTI on Unix is not (easily) done, so this approach orients the way the `OpenExrWrapper` is implemented as suggested [here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/13).
 
-Contrary to Windows, Unreal Engine on Unix is by default compiled without [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) support (thoroughly discussed [here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/22)).
-
-~~**Solution A:** Recompile Unreal Engine with RTTI support~~  
-This drastically limitates portability as any other Unix-based system needs a custom UE installation to develop using this plugin.  
-Also, according to some posts ([1](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083), [2](https://forums.unrealengine.com/t/busertti-true-makes-an-unreal-project-fail-to-load/407837)) the XMPP Plugin currently prevents this approach.
-
-**Solution B:** Enable RTTI per Module  
-It is possible to enable RTTI just in a single module (Setting `bUseRTTI=true` in the `*.Build.cs` file) and compile only that with RTTI support.
-But this needs extra care as RTTI-enabled modules will clash with many Unreal constructs (e.g., `UBlueprintFunctionLibrary`).
-To circumvent that, constructing a seperate RTTI-enabled [Wrapper module is suggested](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/13) like the `OpenExrWrapper` module in `Engine/Plugins/Media/ImgMedia`.  
-The `VtkWrapper` branch shows such an example.
+⚠️ The provided `VtkWrapper` implementation is just an example and better solutions exist.
 
 ## Installation
 
