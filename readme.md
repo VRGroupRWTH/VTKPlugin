@@ -4,43 +4,48 @@ A plugin that links the [VTK Library](https://github.com/Kitware/VTK) to [Unreal
 
 Currently, this plugin does the following:
 - Download & build VTK (infer/change the version in the install script file)
-- Expose VTK to your complete Unreal project (public)
-- Provide a blueprint function "DistanceBetweenTwoPoints" for testing `vtkMath.h` (based on an [official VTK example](https://examples.vtk.org/site/Cxx/SimpleOperations/DistanceBetweenPoints/))
-- Provide a blueprint function "ReadStructuredGridTest" for testing multiple vtk includes (loosely based on an [official VTK example](https://examples.vtk.org/site/Cxx/IO/ReadStructuredGrid/#download-and-build-readstructuredgrid))
+- Expose VTK to your complete Unreal project (public, but you may want this private)
+- Provide a blueprint function "DistanceBetweenTwoPoints" for testing `vtkMath.h` (based on an [official VTK example](https://examples.vtk.org/site/Cxx/SimpleOperations/DistanceBetweenPoints/), cross-compatible)
+- Provide a blueprint function "ReadStructuredGridTest" for more complex vtk includes (loosely based on an [official VTK example](https://examples.vtk.org/site/Cxx/IO/ReadStructuredGrid/#download-and-build-readstructuredgrid), only Windows due to RTTI)
+- Conditional cross-compatibility for Windows/Linux/Mac (tested)
+  - Windows: VTK should work as-is without further adjustments
+  - Linux/Mac: Certain VTK includes won't compile as they use [RTTI mechanics](https://en.wikipedia.org/wiki/Run-time_type_information)
 
 This plugin is quite verbose as it aims to be a foundation for implementing & testing VTK functionality in UE.
 Check the Unreal Log for `[VtkPlugin]` to see what's happening (also valid for the blueprint functions).
 
 ### Remarks on Windows
 
-Delay-loading is currently disabled for Windows and all VTK dlls are copied from `VtkPlugin/Source/ThirdParty/VTKLibrary/bin` to `VtkPlugin/Binaries/Win64` on build.
-This way they lie next to the `*-VtkPlugin.dll` files and are loaded instantly from Windows dll standard searchpaths when the `*-VtkPlugin.dll` files (i.e. the VTKPlugin itself) are loaded.
-Why? Despite delay-loading, the `*-VtkPlugin.dll` files try to include `vtkSys-9.3.dll` and `vtkCommonCore-9.3.dll` which UE can't find on non-standard search paths.
-
-I'm looking into having a more nice solution for Windows, but this seems to work quite stable as of now.
-If you try to setup delay-loading yourself, be aware of your `PATH` variable. 
-E.g., if you have VTK installed on your system your `PATH` variable probably points to the location of your installed VTK `*.dlls` (not the one in your UE project).
-The `PATH` variable is part of the standard search paths, so UE will find all requested VTK `*.dlls` (despite they may not be the intended ones).
+Delay-loading (which would be better practice) is currently disabled for Windows and all VTK dlls are instantly loaded.
+This prevents module reloading.
 
 ### Remarks on Linux/Mac
 
-This plugin aims to be cross-compatible, but there may be broken commits for Linux/Mac as main development is done on Windows.
-Once this plugin receives a stable cross-compatible state, this section is removed.
+Delay-loading is enabled on Unix-based systems and thus also module reloading (theoretically).
+While this plugin compiles on Linux and Mac, not all features are currently supported compared to the Windows implementation because of missing RTTI support.
+
+**TL;DR:** See the `VtkWrapper` branch for an example implementation with full cross-compatability.
+
+Contrary to Windows, Unreal Engine on Unix is by default compiled without [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) support (thoroughly discussed [here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/22)).
+
+~~**Solution A:** Recompile Unreal Engine with RTTI support~~  
+This drastically limitates portability as any other Unix-based system needs a custom UE installation to develop using this plugin.  
+Also, according to some posts ([1](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083), [2](https://forums.unrealengine.com/t/busertti-true-makes-an-unreal-project-fail-to-load/407837)) the XMPP Plugin currently prevents this approach.
+
+**Solution B:** Enable RTTI per Module  
+It is possible to enable RTTI just in a single module (Setting `bUseRTTI=true` in the `*.Build.cs` file) and compile only that with RTTI support.
+But this needs extra care as RTTI-enabled modules will clash with many Unreal constructs (e.g., `UBlueprintFunctionLibrary`).
+To circumvent that, constructing a seperate RTTI-enabled [Wrapper module is suggested](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/13) like the `OpenExrWrapper` module in `Engine/Plugins/Media/ImgMedia`.  
+The `VtkWrapper` branch shows such an example.
 
 ## Installation
 
-You can use the `[*.bat|*.sh|*.command]` installation scripts to download and build VTK for UE automatically.
-By default it will do a `Release` build, but you can tell it to do a `Debug` build by starting it with `Debug` as a parameter. **If you do a Debug build,** be aware to change the respective paths in your `VtkLibrary.Build.cs` and `VtkPlugin.cpp` to `Debug` as well.
+#### Automated Installation
 
-Alternatively, download & build the VTK library yourself and copy the files to the correct locations:
-- Copy the includes to `VTKPlugin/Source/ThirdParty/VTKLibrary/Public`
-- Windows
-  - Copy `*.lib` files to `VTKPlugin/Source/ThirdParty/VtkLibrary/[Release|Debug]/lib` folder
-  - Copy `*.dll` files to `VTKPlugin/Source/ThirdParty/VtkLibrary/[Release|Debug]/bin` folder
-- Linux
-  - Copy `*.so` files to `VTKPlugin/Source/ThirdParty/VtkLibrary/Linux/[Release|Debug]/bin` folder
-- Mac
-  - Copy `*.dylib` files to `VTKPlugin/Source/ThirdParty/VtkLibrary/Mac/[Release|Debug]/bin` folder
+You can use the `[*.bat|*.sh|*.command]` installation scripts to download and build VTK for UE automatically.
+
+By default it will do a `Release` build, but you can tell it to do a `Debug` build by starting it with `Debug` as a parameter.  
+**If you do a Debug build,** be aware to change the respective paths in your `VtkLibrary.Build.cs` and `VtkPlugin.cpp` to `Debug` as well.
 
 ```powershell 
 # Release build
@@ -50,10 +55,21 @@ Alternatively, download & build the VTK library yourself and copy the files to t
 .\install_vtk_windows.bat debug
 ```
 
+#### Manual Installation
+
+Alternatively, download & build the VTK library yourself and copy the files to the correct locations:
+- Copy the includes to `VtkPlugin/Source/ThirdParty/VtkLibrary/Public`
+- Windows
+  - Copy `*.lib` files to `VtkPlugin/Source/ThirdParty/VtkLibrary/[Release|Debug]/lib` folder
+  - Copy `*.dll` files to `VtkPlugin/Source/ThirdParty/VtkLibrary/[Release|Debug]/bin` folder
+- Linux
+  - Copy `*.so` files to `VtkPlugin/Source/ThirdParty/VtkLibrary/Linux/[Release|Debug]/lib` folder
+- Mac
+  - Copy `*.dylib` files to `VtkPlugin/Source/ThirdParty/VtkLibrary/Mac/[Release|Debug]/lib` folder
+
 **Prerequisites:**
 
 - [CMake](https://cmake.org/)
-- C++17
 
 ## Troubleshooting
 
