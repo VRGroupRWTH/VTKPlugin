@@ -2,7 +2,7 @@
   "FileVersion"          : 3,
   "Version"              : 1,
   "VersionName"          : "1.0",
-  "FriendlyName"         : "VTKPlugin",
+  "FriendlyName"         : "VTK Plugin",
   "Description"          : "A plugin that links & exposes VTK to Unreal Engine.",
   "Category"             : "Other",
   "CreatedBy"            : "acdemiralp (RWTH Aachen, VR Group)",
@@ -17,7 +17,7 @@
   "Modules": 
   [
     {
-      "Name"        : "VTKPlugin",
+      "Name"        : "VtkPlugin",
       "Type"        : "Runtime"  ,
       "LoadingPhase": "Default"
     }

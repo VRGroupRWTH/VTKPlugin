@@ -4,9 +4,9 @@ using System;
 using System.IO;
 using UnrealBuildTool;
 
-public class VTKLibrary : ModuleRules
+public class VtkLibrary : ModuleRules
 {
-	public VTKLibrary(ReadOnlyTargetRules Target) : base(Target)
+	public VtkLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
 		Type = ModuleType.External;
 		
@@ -23,7 +23,7 @@ public class VTKLibrary : ModuleRules
 			var dllSearchPath = Path.Combine(ModuleDirectory, BuildDir, "bin");
 
 			if (!Directory.Exists(libSearchPath) || !Directory.Exists(dllSearchPath))
-				Console.WriteLine("Did not find lib- or dll-path for VTKLibrary!");
+				Console.WriteLine("Did not find lib- or dll-path for VtkLibrary!");
 			
 			// Libs
 			foreach (var libPath in Directory.EnumerateFiles(libSearchPath, "*.lib"  , SearchOption.AllDirectories))
@@ -40,7 +40,7 @@ public class VTKLibrary : ModuleRules
 				
 				// TODO: Investigate why we can't delayload VTK like this on Windows, uncomment if fix is found
 				// This prevents the dlls to be auto-loaded when the plugin is read
-				// and allows us to load them later in VTKPlugin.cpp during StartupModule.
+				// and allows us to load them later in VtkPlugin.cpp during StartupModule.
 				// That allows us to load dlls from specific paths, which is not (easily) possible otherwise on Windows.
 				//PublicDelayLoadDLLs.Add(dllName);
 				//RuntimeDependencies.Add(srcPath);
@@ -55,13 +55,13 @@ public class VTKLibrary : ModuleRules
 			var dylibSearchPath = Path.Combine(ModuleDirectory, "Mac", BuildDir, "lib");
 
 			if (!Directory.Exists(dylibSearchPath))
-				Console.WriteLine("Did not find dylib-path for VTKLibrary!");
+				Console.WriteLine("Did not find dylib-path for VtkLibrary!");
 
 			// DyLibs
 			foreach (var filePath in Directory.EnumerateFiles(dylibSearchPath, "*.dylib"  , SearchOption.AllDirectories))
 			{
 				var dylibName = Path.GetFileName(filePath);
-				var dylibPath = Path.Combine("$(ModuleDir)", "Mac", BuildDir, "bin", dylibName);
+				var dylibPath = Path.Combine("$(ModuleDir)", "Mac", BuildDir, "lib", dylibName);
 
 				PublicDelayLoadDLLs.Add(dylibPath);
 				RuntimeDependencies.Add(dylibPath);
@@ -72,13 +72,13 @@ public class VTKLibrary : ModuleRules
 			var soSearchPath = Path.Combine(ModuleDirectory, "Linux", BuildDir, "lib");
 
 			if (!Directory.Exists(soSearchPath))
-				Console.WriteLine("Did not find so-path for VTKLibrary!");
+				Console.WriteLine("Did not find so-path for VtkLibrary!");
 			
 			// SOs
 			foreach (var filePath in Directory.EnumerateFiles(soSearchPath, "*.so"  , SearchOption.AllDirectories))
 			{
 				var soName = Path.GetFileName(filePath);
-				var soPath = Path.Combine("$(ModuleDir)", "Linux", BuildDir, "bin", soName);
+				var soPath = Path.Combine("$(ModuleDir)", "Linux", BuildDir, "lib", soName);
 
 				PublicAdditionalLibraries.Add(soPath);
 				PublicDelayLoadDLLs.Add(soPath);

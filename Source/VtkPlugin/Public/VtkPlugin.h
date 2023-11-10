@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FVTKPluginModule : public IModuleInterface
+class FVtkPluginModule : public IModuleInterface
 {
 public:
 

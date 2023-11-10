@@ -1,34 +1,34 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "VTKPlugin.h"
+#include "VtkPlugin.h"
 #include "Modules/ModuleManager.h"
 #include "Interfaces/IPluginManager.h"
 
 #include "Misc/Paths.h"
 #include "HAL/PlatformProcess.h"
 
-#define LOCTEXT_NAMESPACE "FVTKPluginModule"
+#define LOCTEXT_NAMESPACE "FVtkPluginModule"
 
-void FVTKPluginModule::StartupModule()
+void FVtkPluginModule::StartupModule()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] Delay-loading VTK module..."));
+	UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] Delay-loading VTK module..."));
 
 #if PLATFORM_WINDOWS
 	// VTK will throw an exception when the library is delay-loaded in Windows.
 	// The exception happens before this codeblock triggers and may originate in vtk.
 	// TODO: fix delay-loading for windows
 	
-	UE_LOG(LogTemp, Error, TEXT("[VTKPlugin] VTK is currently NOT delayloaded on Windows, as this causes UE to crash (dlls are available directly at runtime)."));
+	UE_LOG(LogTemp, Error, TEXT("[VtkPlugin] VTK is currently NOT delayloaded on Windows, as this causes UE to crash (dlls are available directly at runtime)."));
 #else
 	LoadDLLs();
 #endif
 
-	UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] %d VTK libraries delay-loaded!"), DynamicLinkLibraryHandles.Num());
+	UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] %d VTK libraries delay-loaded!"), DynamicLinkLibraryHandles.Num());
 }
 
 
 
-void FVTKPluginModule::ShutdownModule()
+void FVtkPluginModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -43,25 +43,25 @@ void FVTKPluginModule::ShutdownModule()
 	// If you know a fix or want to do it anyway, remove the platform check.
 	// TODO: fix unloading for windows
 
-	UE_LOG(LogTemp, Error, TEXT("[VTKPlugin] Not freeing dlls on Windows because dlls are not delay-loaded & this additionally generates a crash on shutdown (with debugger attached)."));
+	UE_LOG(LogTemp, Error, TEXT("[VtkPlugin] Not freeing dlls on Windows because dlls are not delay-loaded & this additionally generates a crash on shutdown (with debugger attached)."));
 #else
 	UnloadDLLs();
 #endif
 }
 
-bool FVTKPluginModule::SupportsDynamicReloading()
+bool FVtkPluginModule::SupportsDynamicReloading()
 {
 #if PLATFORM_WINDOWS
-	UE_LOG(LogTemp, Error, TEXT("[VTKPlugin] VTK currently does NOT support dynamic reloading on Windows, because handles can't be freed."));
+	UE_LOG(LogTemp, Error, TEXT("[VtkPlugin] VTK currently does NOT support dynamic reloading on Windows, because handles can't be freed."));
 	return false;
 #else
 	return true;
 #endif
 }
 
-FString FVTKPluginModule::GetVTKBinariesDir()
+FString FVtkPluginModule::GetVTKBinariesDir()
 {
-	auto Plugin = IPluginManager::Get().FindPlugin("VTKPlugin");
+	auto Plugin = IPluginManager::Get().FindPlugin("VtkPlugin");
 	FString BaseDir = Plugin->GetBaseDir();
 
 	// If you want to load a debug or release build based on UE build, specify here
@@ -73,25 +73,25 @@ FString FVTKPluginModule::GetVTKBinariesDir()
 	
 	
 #if PLATFORM_WINDOWS
-	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VTKLibrary/Win64"));
-	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VTKLibrary"), *BuildDir, "bin");
+	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VtkLibrary/Win64"));
+	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VtkLibrary"), *BuildDir, "bin");
 #elif PLATFORM_LINUX
-	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VTKLibrary/Linux"));
-	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VTKLibrary/Linux"), *BuildDir, "bin");
+	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VtkLibrary/Linux"));
+	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VtkLibrary/Linux"), *BuildDir, "lib");
 #elif PLATFORM_MAC
-	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VTKLibrary/Mac"));
-	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VTKLibrary/Mac"), *BuildDir, "bin");
+	//FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/VtkLibrary/Mac"));
+	FString BinariesDir = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/VtkLibrary/Mac"), *BuildDir, "lib");
 #endif
 
 	if (!FPaths::DirectoryExists(BinariesDir))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[VTKPlugin] VTK Binaries directory does not exist: %s"), *BinariesDir);
+		UE_LOG(LogTemp, Error, TEXT("[VtkPlugin] VTK Binaries directory does not exist: %s"), *BinariesDir);
 	}
 
 	return BinariesDir;
 }
 
-FString FVTKPluginModule::GetExtensionFilter()
+FString FVtkPluginModule::GetExtensionFilter()
 {
 #if PLATFORM_WINDOWS
 	return "dll";
@@ -102,7 +102,7 @@ FString FVTKPluginModule::GetExtensionFilter()
 #endif
 }
 
-void FVTKPluginModule::LoadDLLs()
+void FVtkPluginModule::LoadDLLs()
 {
 	const FString VTKBinariesDir = GetVTKBinariesDir();
 	const FString ExtFilter = GetExtensionFilter();
@@ -127,7 +127,7 @@ void FVTKPluginModule::LoadDLLs()
 
 			if (FilesSkipped.Contains(Filename))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] Skipped %s because it is not delay-loaded."), *Filename);
+				UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] Skipped %s because it is not delay-loaded."), *Filename);
 				continue;
 			}
 
@@ -141,11 +141,11 @@ void FVTKPluginModule::LoadDLLs()
 				DynamicLinkLibraryHandles.Add(Dll);
 				DynamicLinkLibraryNames.Add(Filename);
 				FilesAdded.Add(File);
-				UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] Delay-loaded %d/%d dlls: %s"), DynamicLinkLibraryHandles.Num(), Files.Num() - FilesSkipped.Num(), *Filename);
+				UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] Delay-loaded %d/%d dlls: %s"), DynamicLinkLibraryHandles.Num(), Files.Num() - FilesSkipped.Num(), *Filename);
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] Delay-loading didn't work, retrying again"));
+				UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] Delay-loading didn't work, retrying again"));
 			}
 		}
 		
@@ -155,14 +155,14 @@ void FVTKPluginModule::LoadDLLs()
 	}
 }
 
-void FVTKPluginModule::UnloadDLLs()
+void FVtkPluginModule::UnloadDLLs()
 {
 	for (auto Idx = DynamicLinkLibraryHandles.Num() - 1; Idx >= 0; Idx--)
 	{
 		auto& LibraryHandle = DynamicLinkLibraryHandles[Idx];
 		auto& LibraryName = DynamicLinkLibraryNames[Idx];
 		
-		UE_LOG(LogTemp, Warning, TEXT("[VTKPlugin] Freeing dll: %s"), *LibraryName);
+		UE_LOG(LogTemp, Warning, TEXT("[VtkPlugin] Freeing dll: %s"), *LibraryName);
 		FPlatformProcess::FreeDllHandle(LibraryHandle);
 	}
 	
@@ -172,4 +172,4 @@ void FVTKPluginModule::UnloadDLLs()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FVTKPluginModule, VTKPlugin)
+IMPLEMENT_MODULE(FVtkPluginModule, VtkPlugin)

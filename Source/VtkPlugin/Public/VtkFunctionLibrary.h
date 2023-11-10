@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "VTKFunctionLibrary.generated.h"
+#include "VtkFunctionLibrary.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VTKPLUGIN_API UVTKFunctionLibrary : public UBlueprintFunctionLibrary
+class VTKPLUGIN_API UVtkFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

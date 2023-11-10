@@ -7,5 +7,5 @@ Intermediate/*
 
 # ignore vtk library folder except the UE build script
 Temporary
-Source/ThirdParty/VTKLibrary/*
-!Source/ThirdParty/VTKLibrary/VTKLibrary.Build.cs
+Source/ThirdParty/VtkLibrary/*
+!Source/ThirdParty/VtkLibrary/VtkLibrary.Build.cs

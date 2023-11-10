@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class VTKPlugin : ModuleRules
+public class VtkPlugin : ModuleRules
 {
-	public VTKPlugin(ReadOnlyTargetRules Target) : base(Target)
+	public VtkPlugin(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -26,7 +26,7 @@ public class VTKPlugin : ModuleRules
 			new string[]
 			{
 				"Core",
-				"VTKLibrary",
+				"VtkLibrary",
 				"Projects",
 				// ... add other public dependencies that you statically link with here ...
 				
@@ -43,8 +43,8 @@ public class VTKPlugin : ModuleRules
 				"CoreUObject",
 				"Engine",
 				
-				// (as said above, the VTKLibrary module should better be defined here)
-				//"VTKLibrary",
+				// (as said above, the VtkLibrary module should better be defined here)
+				//"VtkLibrary",
 			}
 			);
 		

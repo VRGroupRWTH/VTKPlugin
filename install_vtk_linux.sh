@@ -4,10 +4,10 @@
 arg1=$(echo $1 | awk '{print tolower($0)}')
 INITIAL_DIR=$PWD
 cd "${0%/*}"
-VTKLIB_DIR=$PWD/Source/ThirdParty/VTKLibrary
+VTKLIB_DIR=$PWD/Source/ThirdParty/VtkLibrary
 
 # check for build config
-if [ $arg1="debug" ]; then
+if [ "$arg1" == "debug" ]; then
   VTK_BUILD_CONFIG=Debug
 else
   VTK_BUILD_CONFIG=Release
@@ -35,9 +35,12 @@ mkdir -p Install/$VTK_BUILD_CONFIG
 printf "Doing a $VTK_BUILD_CONFIG Build."
 
 cd    Build
-cmake .. -DVTK_GROUP_ENABLE_Rendering=DONT_WANT
-cmake --build   . --config $VTK_BUILD_CONFIG --parallel 20
-cmake --install . --config $VTK_BUILD_CONFIG --prefix $VTKLIB_DIR/Linux/$VTK_BUILD_CONFIG
+cmake -G "Unix Makefiles" \
+      -DCMAKE_BUILD_TYPE=$VTK_BUILD_CONFIG -DCMAKE_INSTALL_PREFIX=$VTKLIB_DIR/Linux/$VTK_BUILD_CONFIG \
+      -DVTK_GROUP_ENABLE_Rendering=DONT_WANT \
+      .. 
+cmake --build   . --parallel 20
+cmake --install . 
 
 # move files to expected locations
 mv $VTKLIB_DIR/Linux/$VTK_BUILD_CONFIG/include/vtk-9.3 $VTKLIB_DIR/Public

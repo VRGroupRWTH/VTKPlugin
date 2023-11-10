@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 set arg1=%1
 set INITIAL_DIR=%CD%
 cd /d "%~dp0"
-set VTKLIB_DIR=%CD%\Source\ThirdParty\VTKLibrary
+set VTKLIB_DIR=%CD%\Source\ThirdParty\VtkLibrary
 
 REM check for build config
 if /I "%arg1%" == "Debug" (
