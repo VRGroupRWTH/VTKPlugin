@@ -9,17 +9,17 @@ Currently, this plugin does the following:
 - Expose VTK to your complete Unreal project (public, but you may want this private)
 - Provide a blueprint function "DistanceBetweenTwoPoints" for testing `vtkMath.h` (based on an [official VTK example](https://examples.vtk.org/site/Cxx/SimpleOperations/DistanceBetweenPoints/), cross-compatible)
 - Provide a blueprint function "ReadStructuredGridTest" for more complex vtk includes (loosely based on an [official VTK example](https://examples.vtk.org/site/Cxx/IO/ReadStructuredGrid/#download-and-build-readstructuredgrid)
-- Complete cross-compatibility for Windows/Linux/Mac (tested)
+- ✔️ Complete cross-compatibility for Windows/Linux/Mac (tested)
 
 This plugin is quite verbose as it aims to be a foundation for implementing & testing VTK functionality in UE.
 Check the Unreal Log for `[VtkPlugin]` to see what's happening (also valid for the blueprint functions).
 
-### Remarks on Windows
+### ✔️ Remarks on Windows
 
 Delay-loading (which would be better practice) is currently disabled for Windows and all VTK dlls are instantly loaded.
 This prevents module reloading.
 
-### Remarks on Linux/Mac
+### ✔️ Remarks on Linux/Mac
 
 Delay-loading is enabled on Unix-based systems and thus also module reloading (theoretically).
 
