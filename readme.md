@@ -14,29 +14,21 @@ Currently, this plugin does the following:
 This plugin is quite verbose as it aims to be a foundation for implementing & testing VTK functionality in UE.
 Check the Unreal Log for `[VtkPlugin]` to see what's happening (also valid for the blueprint functions).
 
-### ✔️ Remarks on Windows
+### ⚠️ Remarks on Windows
 
-Delay-loading (which would be better practice) is currently disabled for Windows and all VTK dlls are instantly loaded.
-This prevents module reloading.
+- Delay-loading (which would be better practice) is currently disabled and all VTK dlls are instantly loaded.
+  - This prevents module reloading.
 
 ### ⚠️ Remarks on Linux/Mac
 
-Delay-loading is enabled on Unix-based systems and thus also module reloading (theoretically).
-While this plugin compiles on Linux and Mac, not all features are currently supported compared to the Windows implementation because of missing RTTI support.
-
-**TL;DR:** See the [`VtkWrapper`](https://github.com/VRGroupRWTH/VTKPlugin/tree/VtkWrapper) branch for an example implementation with full cross-compatability.
-
-Contrary to Windows, Unreal Engine on Unix is by default compiled without [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) support (thoroughly discussed [here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/22)).
-
-~~**Solution A:** Recompile Unreal Engine with RTTI support~~  
-This drastically limitates portability as any other Unix-based system needs a custom UE installation to develop using this plugin.  
-Also, according to some posts ([1](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083), [2](https://forums.unrealengine.com/t/busertti-true-makes-an-unreal-project-fail-to-load/407837)) the XMPP Plugin currently prevents this approach.
-
-**Solution B:** Enable RTTI per Module  
-It is possible to enable RTTI just in a single module (Setting `bUseRTTI=true` in the `*.Build.cs` file) and compile only that with RTTI support.
-But this needs extra care as RTTI-enabled modules will clash with many Unreal constructs (e.g., `UBlueprintFunctionLibrary`).
-To circumvent that, constructing a seperate RTTI-enabled [Wrapper module is suggested](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/13) like the `OpenExrWrapper` module in `Engine/Plugins/Media/ImgMedia`.  
-The `VtkWrapper` branch shows such an example.
+- No full cross-compatibility as VTK employs [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) which is by default not supported on Unreal Editor compiled for Unix ([also discussed here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/22))
+  - ~~**Solution A:** Recompile Unreal Engine with RTTI support~~
+    -Not advised, will clash with other Plugins
+  - **Solution B:** Add Wrapper module with RTTI enabled ([suggested here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/13))
+    - Adding a `bUseRTTI=true` in a `*.Build.cs` file enabled RTTI only for that module
+    - Also see Unreals `OpenExrWrapper` module
+    - Use PImpl pattern to handle all VTK code in `.cpp` files and only expose UE safe headers
+    - See `VtkWrapper` branch
 
 ## Installation
 
@@ -45,13 +37,13 @@ The `VtkWrapper` branch shows such an example.
 You can use the `[*.bat|*.sh|*.command]` installation scripts to download and build VTK for UE automatically.
 
 By default it will do a `Release` build, but you can tell it to do a `Debug` build by starting it with `Debug` as a parameter.  
-**If you do a Debug build,** be aware to change the respective paths in your `VtkLibrary.Build.cs` and `VtkPlugin.cpp` to `Debug` as well.
+**If you do a Debug build,** don't delete your build folder (`./Temporary`) at the end of the script. The `*.dll` files store the path to its debug symbols which remain there.
 
 ```powershell 
 # Release build
 .\install_vtk_windows.bat
 
-# Debug build
+# Debug build (do not delete build folder at the end)
 .\install_vtk_windows.bat debug
 ```
 
@@ -74,9 +66,6 @@ Alternatively, download & build the VTK library yourself and copy the files to t
 ## Troubleshooting
 
 For test data have a look at the VTKData repository (files here are referenced in the [official VTK examples](https://examples.vtk.org/site/Cxx)): https://github.com/open-cv/VTKData
-
-If you are using Linux or Mac the scripts or configuration may not be fully functional.
-Please consider a pull request if this is the case and you fix it. :-)
 
 If there are linking errors with the VTK library, have a look in the `Source/ThirdParty/VtkLibrary` folder:
 - Check if your VTK binaries are in the correct folder

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using UnrealBuildTool;
 
@@ -12,6 +13,12 @@ public class VtkLibrary : ModuleRules
 		
 		// If you want to load a debug build, specify here the Debug directory
 		var BuildDir = "Release";
+
+		if (!Directory.Exists(Path.Combine(ModuleDirectory, "Release")) && Directory.Exists(Path.Combine(ModuleDirectory, "Debug")))
+		{
+			Console.WriteLine("[VtkPlugin] Searched for Release folder but only found Debug, so chose Debug.");
+			BuildDir = "Debug";
+		}
 		
 		// Load includes
 		PublicSystemIncludePaths.Add("$(ModuleDir)/Public");
@@ -23,7 +30,7 @@ public class VtkLibrary : ModuleRules
 			var dllSearchPath = Path.Combine(ModuleDirectory, BuildDir, "bin");
 
 			if (!Directory.Exists(libSearchPath) || !Directory.Exists(dllSearchPath))
-				Console.WriteLine("Did not find lib- or dll-path for VtkLibrary!");
+				Console.WriteLine("[VtkPlugin] Did not find lib- or dll-path for VtkLibrary!");
 			
 			// Libs
 			foreach (var libPath in Directory.EnumerateFiles(libSearchPath, "*.lib"  , SearchOption.AllDirectories))
@@ -47,7 +54,24 @@ public class VtkLibrary : ModuleRules
 
 				// This adds a runtime dependency & copies the dll from source path to destination path on build
 				RuntimeDependencies.Add(destPath, srcPath);
+			}
+			
+			// DLLs
+			foreach (var filePath in Directory.EnumerateFiles(dllSearchPath, "*.pdb"  , SearchOption.AllDirectories))
+			{
+				var dllName = Path.GetFileName(filePath);
+				var srcPath = Path.Combine("$(ModuleDir)", BuildDir, "bin", dllName);
+				var destPath = Path.Combine("$(BinaryOutputDir)", dllName);
+				
+				// TODO: Investigate why we can't delayload VTK like this on Windows, uncomment if fix is found
+				// This prevents the dlls to be auto-loaded when the plugin is read
+				// and allows us to load them later in VtkPlugin.cpp during StartupModule.
+				// That allows us to load dlls from specific paths, which is not (easily) possible otherwise on Windows.
+				//PublicDelayLoadDLLs.Add(dllName);
+				//RuntimeDependencies.Add(srcPath);
 
+				// This adds a runtime dependency & copies the dll from source path to destination path on build
+				RuntimeDependencies.Add(destPath, srcPath);
 			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
