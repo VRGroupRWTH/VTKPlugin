@@ -23,7 +23,7 @@ Check the Unreal Log for `[VtkPlugin]` to see what's happening (also valid for t
 
 - No full cross-compatibility as VTK employs [RTTI](https://en.wikipedia.org/wiki/Run-time_type_information) which is by default not supported on Unreal Editor compiled for Unix ([also discussed here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/22))
   - ~~**Solution A:** Recompile Unreal Engine with RTTI support~~
-    -Not advised, will clash with other Plugins
+    - Not advised, will clash with other Plugins
   - **Solution B:** Add Wrapper module with RTTI enabled ([suggested here](https://forums.unrealengine.com/t/rtti-failed-compiling-when-enabled-for-4-23-linux/455083/13))
     - Adding a `bUseRTTI=true` in a `*.Build.cs` file enabled RTTI only for that module
     - Also see Unreals `OpenExrWrapper` module
